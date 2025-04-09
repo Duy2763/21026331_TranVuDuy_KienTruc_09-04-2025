@@ -1,0 +1,98 @@
+version: '3'
+
+services:
+  # API Gateway
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - "8000:8000"
+    depends_on:
+      - product-service
+      - order-service
+      - customer-service
+    networks:
+      - microservices-network
+
+  # Product Service
+  product-service:
+    build: ./product-service
+    ports:
+      - "8001:8001"
+    environment:
+      - MONGODB_URI=mongodb://mongodb-product:27017/product-service
+    depends_on:
+      - mongodb-product
+    networks:
+      - microservices-network
+
+  # Order Service
+  order-service:
+    build: ./order-service
+    ports:
+      - "8002:8002"
+    environment:
+      - MONGODB_URI=mongodb://mongodb-order:27017/order-service
+    depends_on:
+      - mongodb-order
+    networks:
+      - microservices-network
+
+  # Customer Service
+  customer-service:
+    build: ./customer-service
+    ports:
+      - "8003:8003"
+    environment:
+      - MONGODB_URI=mongodb://mongodb-customer:27017/customer-service
+    depends_on:
+      - mongodb-customer
+    networks:
+      - microservices-network
+
+  # MongoDB for Product Service
+  mongodb-product:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb-product-data:/data/db
+    networks:
+      - microservices-network
+
+  # MongoDB for Order Service
+  mongodb-order:
+    image: mongo:latest
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongodb-order-data:/data/db
+    networks:
+      - microservices-network
+
+  # MongoDB for Customer Service
+  mongodb-customer:
+    image: mongo:latest
+    ports:
+      - "27019:27017"
+    volumes:
+      - mongodb-customer-data:/data/db
+    networks:
+      - microservices-network
+
+  # RabbitMQ for message broker
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - microservices-network
+
+networks:
+  microservices-network:
+    driver: bridge
+
+volumes:
+  mongodb-product-data:
+  mongodb-order-data:
+  mongodb-customer-data: 
